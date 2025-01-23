@@ -15,6 +15,7 @@ from transformers import logging as transformer_logging  # type:ignore
 from model_server.custom_models import router as custom_models_router
 from model_server.custom_models import warm_up_intent_model
 from model_server.encoders import router as encoders_router
+from model_server.price import router as price_router
 from model_server.management_endpoints import router as management_router
 from onyx import __version__
 from onyx.utils.logger import setup_logger
@@ -99,6 +100,7 @@ def get_model_app() -> FastAPI:
     application.include_router(management_router)
     application.include_router(encoders_router)
     application.include_router(custom_models_router)
+    application.include_router(price_router)
 
     return application
 
