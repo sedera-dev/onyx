@@ -7,23 +7,26 @@ import stripe
 router = APIRouter(prefix="/price")
 
 
-# Clé secrète
+# Secret key stripe
 stripe.api_key = "sk_test_51Qk04QLWuxQjMXziLCEIfTUiG4YY3RpXYzN9EtV62zK8W07sKTfBaTslrvriD7jREGfQxVvmcQ6uRVLCn6Jnce9600AMrQ7YVW"
 
-# Classe pour le tarif
+# Class for price creation
 class PricingModel(BaseModel):
     name: str
     amount: int
     currency: str = 'usd'  # Par défaut, USD
 
+# Class to filter the price
 class PricingFilter(BaseModel):
     active: Optional[bool] = None
     currency: Optional[str] = None
     product_id: Optional[str] = None
 
+# Class metadata
 class Metadata(BaseModel):
     order_id: int
 
+# Class to update the price
 class PricingUpdate(BaseModel):
     active: Optional[bool] = None
     nickname: Optional[str] = None
@@ -33,13 +36,14 @@ class PricingUpdate(BaseModel):
 @router.post("/create-price")
 async def create_price(pricing: PricingModel):
     try:
+        # Create price
         price = stripe.Price.create(
             unit_amount=pricing.amount,
             currency=pricing.currency,
             product_data={"name": pricing.name},
         )
 
-         # Récupérer les détails du produit associé
+        # Retrieve associated product details
         product = stripe.Product.retrieve(price.product)
 
         price.product_data = {
@@ -58,7 +62,7 @@ async def create_price(pricing: PricingModel):
 @router.put("/update-price/{price_id}")
 async def update_price(price_id: str, pricing: PricingUpdate =  Depends()):
     try:
-         # Prepare update parameters
+        # Prepare update parameters
         update_params = {}
         
         # Only include non-None fields in the update
@@ -90,7 +94,7 @@ async def get_one_price(price_id: str):
     try:
         price = stripe.Price.retrieve(price_id)
 
-         # Récupérer les détails du produit associé
+        # Retrieve associated product details
         product = stripe.Product.retrieve(price.product)
 
         price.product_data = {
@@ -108,12 +112,12 @@ async def get_one_price(price_id: str):
 @router.get("/get-all-price")
 async def get_all_price(filter: PricingFilter =  Depends()):
     try:
-        # Lister tous les tarifs (avec une pagination par défaut)
+        # List all prices (with default pagination)
         prices = stripe.Price.list(limit=100) 
 
         filtered_prices = []
 
-        
+        # Filter price
         for price in prices.data:
             if filter is not None and filter.active is not None and price.active != filter.active: 
                 continue
